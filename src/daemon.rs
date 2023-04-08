@@ -261,6 +261,7 @@ pub struct Daemon {
     daemon_dir: PathBuf,
     blocks_dir: PathBuf,
     network: Network,
+    magic: Option<u32>,
     conn: Mutex<Connection>,
     message_id: Counter, // for monotonic JSONRPC 'id'
     signal: Waiter,
@@ -277,6 +278,7 @@ impl Daemon {
         daemon_rpc_addr: SocketAddr,
         cookie_getter: Arc<dyn CookieGetter>,
         network: Network,
+        magic: Option<u32>,
         signal: Waiter,
         metrics: &Metrics,
     ) -> Result<Daemon> {
@@ -284,6 +286,7 @@ impl Daemon {
             daemon_dir: daemon_dir.clone(),
             blocks_dir: blocks_dir.clone(),
             network,
+            magic,
             conn: Mutex::new(Connection::new(
                 daemon_rpc_addr,
                 cookie_getter,
@@ -336,6 +339,7 @@ impl Daemon {
             daemon_dir: self.daemon_dir.clone(),
             blocks_dir: self.blocks_dir.clone(),
             network: self.network,
+            magic: self.magic,
             conn: Mutex::new(self.conn.lock().unwrap().reconnect()?),
             message_id: Counter::new(),
             signal: self.signal.clone(),
@@ -356,7 +360,7 @@ impl Daemon {
     }
 
     pub fn magic(&self) -> u32 {
-        self.network.magic()
+        self.magic.unwrap_or_else(|| self.network.magic())
     }
 
     fn call_jsonrpc(&self, method: &str, request: &Value) -> Result<Value> {
