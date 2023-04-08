@@ -3,6 +3,7 @@
 # If you are not familiar with Docker either it's probably be safer to NOT use it.
 
 FROM debian:bullseye-slim as base
+FROM liuchong/rustup:stable as rustup
 RUN apt-get update -qqy
 RUN apt-get install -qqy librocksdb-dev curl
 
